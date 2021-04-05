@@ -1,0 +1,5 @@
+.vagrant/
+kubernetes-setup/join-command
+*.deb
+
+vagrantfile.txt

@@ -1,0 +1,126 @@
+commonLabels:
+  prometheus: prometheus-k8s-devops
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false
+    general: true
+    k8s: true
+    kubeApiserver: false
+    kubeApiserverError: true
+    kubePrometheusNodeAlerting: true
+    kubePrometheusNodeRecording: true
+    kubernetesAbsent: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeScheduler: false
+    network: true
+    node: true
+    prometheus: true
+    prometheusOperator: true
+    time: true
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    hosts:
+      - alertmanager.devopsua.tk
+      -
+grafana:
+  enabled: true
+
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 125m
+    limits:
+      memory: 256Mi
+  adminPassword: ${grafana_admin_pass}
+  ingress:
+    enabled: true
+    hosts:
+      - grafana.devopsua.tk
+  plugins:
+    - grafana-piechart-panel
+#  grafana.ini:
+#    gitlab:
+
+kubeApiServer:
+  enabled: false
+
+kubeControllerManager:
+  enabled:
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+prometheus:
+
+  enabled: true
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+    maxUnavailable: ""
+
+  ingress:
+    enabled: true
+    annotations: {}
+    labels: {}
+
+    hosts:
+      - prometheus.devopsua.tk
+
+  prometheusSpec:
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    listenLocal: false
+
+    ruleSelectorNilUsesHelmValues: true
+    ruleSelector:
+      matchExpressions:
+          - key: prometheus
+            operator: In
+            values:
+              - prometheus-k8s-devops
+    serviceMonitorSelector:
+      matchLabels:
+        prometheus: prometheus-k8s-devops
+
+    retention: 5d
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: prom
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    additionalScrapeConfigs:
+      - job_name: 'gitlab'
+        scrape_interval: 30s
+        scrape_timeout: 10s
+        metrics_path: /-/metrics
+        scheme: https
+        static_configs:
+          - targets: [ 'gitlab.devopsua.tk.ua:443']
+
+      - job_name: 'traefik'
+        scrape_interval: 30s
+        scrape_timeout: 10s
+        metrics_path: /metrics
+        scheme: http
+        static_configs:
+          - targets: [ 'inst-01.devopsua.tk:9100']

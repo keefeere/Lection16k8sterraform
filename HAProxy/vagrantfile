@@ -1,0 +1,23 @@
+
+Vagrant.configure("2") do |config|
+#Set up main machine - loadbalancer
+  config.vm.define "loadbalancer" do |loadbalancer|
+    loadbalancer.vm.box = 'bento/ubuntu-16.04'
+    loadbalancer.vm.hostname = "loadbalancer"
+    loadbalancer.vm.network :private_network, ip: "192.168.50.2"
+
+    #bridged network for acces from internet on my note, mac for dhcp lease
+    loadbalancer.vm.network :public_network, :bridge => "Realtek USB GbE Family Controller", :mac=> "0800279CC9D9"
+
+    #inital provision - update apt, install haproxy, copy inital part of confg
+    loadbalancer.vm.provision "shell", path: "provision.sh"
+
+
+    #restart haproxy    
+    loadbalancer.vm.provision "shell",
+    inline: "sudo service haproxy restart"
+
+ 
+  end
+
+end
