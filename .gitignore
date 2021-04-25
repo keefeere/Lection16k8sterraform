@@ -1,8 +1,7 @@
 # macOS
 .DS_Store
 
-# Binary
-terraform
+
 
 # Sublime Text project files
 *.sublime-workspace
@@ -22,7 +21,7 @@ answers.txt
 
 # Terraform
 *.tfplan
-.terraform/
+#.terraform/
 *.tfstate*
 
 # Python
@@ -51,7 +50,9 @@ override.tf
 plan
 
 roles/
-*/.vagrant
+*.vagrant
 /k8svagrant/kubernetes-setup/join-command
 /k8svagrant/kubernetes-setup/join-command-cpn
 /.test
+/k8svagrant/.vagrant
+/terraform/.terraform

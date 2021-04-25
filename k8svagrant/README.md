@@ -1,4 +1,5 @@
-## **VAGRANT setup kubernenes cluster with one master and two nodes using ansible provisioning**
+## **VAGRANT setup k8s cluster with two control plane nodes and two worker nodes using ansible provisioning**
 
-* deploy several nodes with cycles
-* ansible playbook to profision k8s cluster
+* ansible playbook to provision k8s cluster
+* deploy several worker nodes with cycles
+* auto join nodes with join-command generation an transfer to host

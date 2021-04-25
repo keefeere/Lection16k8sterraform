@@ -88,7 +88,7 @@
       daemon_reload: yes
       state: restarted
   - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --control-plane-endpoint="192.168.50.2" --apiserver-cert-extra-sans="192.168.50.2"  --node-name k8s-master-1 --pod-network-cidr=192.168.0.0/16
+    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --control-plane-endpoint="192.168.50.2" --apiserver-cert-extra-sans="10.10.10.212,keefeere.tk"  --node-name k8s-master-1 --pod-network-cidr=192.168.10.0/24
 
   - name: Generate new certs
     command: kubeadm init phase upload-certs --upload-certs
@@ -103,7 +103,7 @@
 
   - name: Install calico pod network
     become: false
-    command: kubectl create -f https://docs.projectcalico.org/v3.9/getting-started/kubernetes/installation/hosted/calico.yaml
+    command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
   - name: Generate join command
     command: kubeadm token create --print-join-command
     register: join_command
@@ -119,6 +119,12 @@
   - name: Copy join command for 2nd control plane node to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }} --control-plane --apiserver-advertise-address="192.168.50.20" --certificate-key {{ cert_key.stdout_lines[2] }}" dest="./join-command-cpn"
     become: false
+  - name: Copy kubectl config to local dir
+    ansible.builtin.fetch:
+     src: /home/vagrant/.kube/config
+     dest: /mnt/c/users/media/.kube/
+     flat: yes
+
 
 
   handlers:
