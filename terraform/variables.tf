@@ -10,14 +10,3 @@ variable "kube_config" {
   default = "~/.kube/config"
 }
 
-variable "namespace" {
-  type = string
-  default = "staging"
-}
-
-# variable "grafana_password" {
-#   type = string
-# }
-
-
-

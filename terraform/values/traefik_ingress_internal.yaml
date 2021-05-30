@@ -1,0 +1,121 @@
+logs:
+  general:
+    level: INFO
+resources:
+   requests:
+     cpu: "100m"
+     memory: "50Mi"
+   limits:
+     cpu: "300m"
+     memory: "150Mi"
+
+deployment:
+  enabled: true
+  # Can be either Deployment or DaemonSet
+  kind: Deployment
+  # Number of pods of the deployment (only applies when kind == Deployment)
+  replicas: 2
+
+
+
+
+
+#hostNetwork: true
+ipaddress: 213.231.1.152
+service:
+  type: ClusterIP
+ports:
+  traefik:
+    port: 9000
+    # Use hostPort if set.
+    hostPort: 9000
+    #
+    # Use hostIP if set. If not set, Kubernetes will default to 0.0.0.0, which
+    # means it's listening on all your interfaces and all your IPs. You may want
+    # to set this value if you need traefik to listen on specific interface
+    # only.
+    # hostIP: 192.168.100.10
+
+    # Override the liveness/readiness port. This is useful to integrate traefik
+    # with an external Load Balancer that performs healthchecks.
+    # healthchecksPort: 9000
+
+    # Defines whether the port is exposed if service.type is LoadBalancer or
+    # NodePort.
+    #
+    # You SHOULD NOT expose the traefik port on production deployments.
+    # If you want to access it from outside of your cluster,
+    # use `kubectl port-forward` or create a secure ingress
+    expose: true
+    # The exposed port for this service
+    exposedPort: 9000
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+  web:
+    port: 80
+    #redirectTo: websecure
+    # hostPort: 8000
+    # expose: true
+    # exposedPort: 80
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # Use nodeport if set. This is useful if you have configured Traefik in a
+    # LoadBalancer
+    # nodePort: 32080
+    # Port Redirections
+    # Added in 2.2, you can make permanent redirects via entrypoints.
+    # https://docs.traefik.io/routing/entrypoints/#redirection
+    # redirectTo: websecure
+  
+  websecure:
+    port: 443
+    # hostPort: 443
+    # expose: true
+    # exposedPort: 443
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # nodePort: 32443
+    # Set TLS at the entrypoint
+    # https://doc.traefik.io/traefik/routing/entrypoints/#tls
+    tls:
+      enabled: true
+      # this is the name of a TLSOption definition
+      options: ""
+      certResolver: "leresolver"
+      domains: 
+       - main: keefeere.tk
+      #   sans:
+      #     - foo.example.com
+      #     - bar.example.com
+
+# TLS Options are created as TLSOption CRDs
+# https://doc.traefik.io/traefik/https/tls/#tls-options
+# Example:
+# tlsOptions:
+#   default:
+#     sniStrict: true
+#     preferServerCipherSuites: true
+#   foobar:
+#     curvePreferences:
+#       - CurveP521
+#       - CurveP384
+tlsOptions: {}
+additionalArguments:
+   - "--certificatesresolvers.letsencrypt.acme.email=keefeere@ukr.net"
+   - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+   - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+   - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+  # - "--certificatesResolvers.letsencrypt.acme.dnschallenge=true"
+  # - "--certificatesResolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+  - "--api.insecure=true"
+  - "--accesslog=true"
+  - "--log.level=INFO"
+securityContext:
+  capabilities:
+    drop: [ALL]
+    add: [NET_BIND_SERVICE]
+  readOnlyRootFilesystem: true
+  runAsGroup: 0
+  runAsNonRoot: false
+  runAsUser: 0
+

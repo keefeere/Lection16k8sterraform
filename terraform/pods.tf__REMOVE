@@ -1,0 +1,20 @@
+
+resource "kubernetes_pod" "example" {
+  metadata {
+    name = "nginx-alpine"
+    labels = {
+      app = "nginx-alpine"
+    }
+  }
+
+  spec {
+    container {
+      image = "nginx:1.20.0-alpine"
+      name  = "nginx-alpine"
+
+      port {
+        container_port = 8080
+      }
+    }
+  }
+}
