@@ -1,6 +1,11 @@
 resource "kubernetes_ingress" "example_ingress" {
   metadata {
     name = "example-ingress"
+    annotations = {
+      "cert-manager.io/cluster-issuer" = "letsencrypt-staging" #change to letsencrypt-prod after testing
+      "kubernetes.io/ingress.class" = "traefik-cert-manager"
+      "certmanager.k8s.io/acme-challenge-type" = "http01"
+     }
   }
 
   spec {
@@ -24,8 +29,9 @@ resource "kubernetes_ingress" "example_ingress" {
     #   }
     # }
 
-    # tls {
-    #   secret_name = "tls-secret"
-    # }
+     tls {
+        hosts = [ "keefeere.tk" ]
+        secret_name = "tls-secret"
+      }
   }
 }
