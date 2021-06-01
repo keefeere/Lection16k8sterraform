@@ -20,6 +20,9 @@ deployment:
 
 
 
+
+
+
 #hostNetwork: true
 ipaddress: 213.231.1.152
 service:
