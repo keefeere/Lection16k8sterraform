@@ -17,7 +17,13 @@ deployment:
   replicas: 2
 
 
-
+# providers:
+#   kubernetesIngress:
+#     enabled: true
+#     # labelSelector: environment=production,method=traefik
+#     namespaces: []
+#       # - "default"
+#     213.231.1.152
 
 
 
@@ -109,6 +115,7 @@ additionalArguments:
   # - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
   # - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
   - "--providers.kubernetesIngress.ingressClass=traefik-cert-manager"
+  - "--providers.kubernetesIngress.ingressEndpoint.IP=213.231.1.152"
   - "--api.insecure=true"
   - "--accesslog=true"
   - "--log.level=INFO"
