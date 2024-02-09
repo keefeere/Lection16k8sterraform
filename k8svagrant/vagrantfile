@@ -1,58 +1,79 @@
-IMAGE_NAME = "bento/ubuntu-16.04"
-N = 2
+IMAGE_NAME = "generic/alpine318"
+N = 3
 
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
-    config.vm.synced_folder "./", "/vagrant", 
+    config.vm.synced_folder "./", "/vagrant", type: "smb",
     owner: "vagrant",
-    mount_options: ["dmode=775,fmode=600"]
-    
+    #mount_options: ["dmode=775,fmode=600", "vers=3.0"]
+    mount_options: ['vers=3.0', "domain=MicrosoftAccount", "username=cheseral@gmail.com"]
+    #config.ssh.shell = "ash"
     #workaroud for elliminate WARNING: UNPROTECTED PRIVATE KEY FILE!   error in Ansible because WSL can't set permissions
     config.ssh.private_key_path = "~/.vagrant.d/insecure_private_key"
-    config.vm.provider "virtualbox" do |v|
+    config.vm.provider "hyperv" do |v|
         v.memory = 2048
         v.cpus = 2
     end
       
     config.vm.define "k8s-master-1" do |master1|
         master1.vm.box = IMAGE_NAME
-        master1.vm.network "private_network", ip: "192.168.50.10"
+        master1.vm.network "private_network", ip: "192.168.50.10", bridge: "local"
         #master1.vm.network :public_network, :bridge => "Realtek USB GbE Family Controller"
         master1.vm.hostname = "k8s-master-1"
-        master1.vm.provision "ansible" do |ansible|
-            ansible.playbook = "kubernetes-setup/inital-master-playbook.yml"
-            ansible.extra_vars = {
-                node_ip: "192.168.50.10",
-            }
-        end
+        # master1.vm.provision "ansible_local" do |ansible|
+        #     ansible.playbook = "kubernetes-setup/inital-master-playbook.yml"
+        #     ansible.extra_vars = {
+        #         node_ip: "192.168.50.10",
+        #     }
+        #end
     end
 
 
     config.vm.define "k8s-master-2" do |master2|
         master2.vm.box = IMAGE_NAME
-        master2.vm.network "private_network", ip: "192.168.50.20"
+        master2.vm.network "private_network", ip: "192.168.50.20", bridge: "local"
         #master2.vm.network :public_network, :bridge => "Realtek USB GbE Family Controller"
         master2.vm.hostname = "k8s-master-2"
-        master2.vm.provision "ansible" do |ansible|
-            ansible.playbook = "kubernetes-setup/master-2-playbook.yml"
-            ansible.extra_vars = {
-                node_ip: "192.168.50.20",
-            }
-        end
+        # master2.vm.provision "ansible_local" do |ansible|
+        #     ansible.playbook = "kubernetes-setup/master-2-playbook.yml"
+        #     ansible.extra_vars = {
+        #        node_ip: "192.168.50.20",
+        #     }
+        #end
     end
+
+    config.vm.define "k8s-master-3" do |master3|
+        master3.vm.box = IMAGE_NAME
+        master3.vm.network "private_network", ip: "192.168.50.30", bridge: "local"
+        #master2.vm.network :public_network, :bridge => "Realtek USB GbE Family Controller"
+        master3.vm.hostname = "k8s-master-3"
+        # master2.vm.provision "ansible_local" do |ansible|
+        #     ansible.playbook = "kubernetes-setup/master-2-playbook.yml"
+        #     ansible.extra_vars = {
+        #        node_ip: "192.168.50.20",
+        #     }
+        #end
+    end
+
+
 
     (1..N).each do |i|
         config.vm.define "node-#{i}" do |node|
             node.vm.box = IMAGE_NAME
-            node.vm.network "private_network", ip: "192.168.50.#{i + 50}"
+            node.vm.network "private_network", ip: "192.168.50.#{i + 50}", bridge: "local"
             node.vm.hostname = "node-#{i}"
-            node.vm.provision "ansible" do |ansible|
-                ansible.playbook = "kubernetes-setup/node-playbook.yml"
-                ansible.extra_vars = {
-                    node_ip: "192.168.50.#{i + 50}",
-                }
+            #config.ssh.shell = "ash"
+            node.vm.provider "hyperv" do |v|
+                v.memory = 2048
+                v.cpus = 2
             end
+            # node.vm.provision "ansible_local" do |ansible|
+            #     ansible.playbook = "kubernetes-setup/node-playbook.yml"
+            #     ansible.extra_vars = {
+            #         node_ip: "192.168.50.#{i + 50}",
+            #     }
+           # end
         end
     end
 end

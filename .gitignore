@@ -56,3 +56,4 @@ roles/
 /.test
 /k8svagrant/.vagrant
 /terraform/.terraform
+k8svagrant/config
