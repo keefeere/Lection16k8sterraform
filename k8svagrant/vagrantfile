@@ -1,6 +1,24 @@
 IMAGE_NAME = "generic/alpine318"
 N = 3
 
+$InitScript = <<-SCRIPT
+sudo kubeadm init --apiserver-advertise-address="192.168.1.130" --control-plane-endpoint="192.168.1.150" --node-name k8s-master-1 --pod-network-cidr=10.244.0.0/16
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+cp $HOME/.kube/config /vagrant/config
+
+sudo kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+SCRIPT
+
+$MasterJoinScript = <<-SCRIPT
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+sudo kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+SCRIPT
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
@@ -16,6 +34,8 @@ Vagrant.configure("2") do |config|
         v.cpus = 2
     end
       
+    config.vm.provision "shell", path: "provision.sh"
+
     config.vm.define "k8s-master-1" do |master1|
         master1.vm.box = IMAGE_NAME
         master1.vm.network "private_network", ip: "192.168.50.10", bridge: "local"
@@ -27,6 +47,8 @@ Vagrant.configure("2") do |config|
         #         node_ip: "192.168.50.10",
         #     }
         #end
+        ##todo Normal ansible playbook
+        master1.vm.provision "shell", inline: $InitScript
     end
 
 
@@ -41,6 +63,8 @@ Vagrant.configure("2") do |config|
         #        node_ip: "192.168.50.20",
         #     }
         #end
+        master2.vm.provision "shell", inline: $MasterJoinScript
+
     end
 
     config.vm.define "k8s-master-3" do |master3|
@@ -54,6 +78,9 @@ Vagrant.configure("2") do |config|
         #        node_ip: "192.168.50.20",
         #     }
         #end
+
+        master3.vm.provision "shell", inline: $MasterJoinScript
+
     end
 
 
@@ -74,6 +101,9 @@ Vagrant.configure("2") do |config|
             #         node_ip: "192.168.50.#{i + 50}",
             #     }
            # end
+           node.vm.provision "shell",
+            inline: "sudo kubeadm join 192.168.1.150:6443 --token 5i28qa.0obv43nuq2mrrbhp --discovery-token-ca-cert-hash sha256:8eef7b10f76a93e2a1617473463713d1dbdf928719a6cbdc182a7480160f78ce"
+
         end
     end
 end
